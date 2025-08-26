@@ -1,1 +1,1 @@
-web: gunicorn search_image:app --timeout 180 --workers 2 --bind 0.0.0.0:$PORT
+web: gunicorn search_image:app --workers 1 --bind 0.0.0.0:$PORT
