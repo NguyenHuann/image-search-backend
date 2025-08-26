@@ -3,25 +3,24 @@ import io
 import pickle
 import numpy as np
 from PIL import Image
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from tensorflow.keras.applications.efficientnet import EfficientNetB0, preprocess_input
 from tensorflow.keras.preprocessing import image
 
-# === Khởi tạo Flask app sớm ===
-app = Flask(__name__)
+# Khởi tạo Flask app sớm
+app = Flask(__name__, static_folder="dataset", static_url_path="/dataset")
 CORS(app)
-
-# === Load model ===
+# Load model
 model = EfficientNetB0(weights="imagenet", include_top=False, pooling="avg")
 
-# === Load vector và path ảnh đã lưu ===
+# Load vector và path ảnh đã lưu
 vectors = pickle.load(open("vectors.pkl", "rb"))
 paths = pickle.load(open("paths.pkl", "rb"))
 vectors = np.array(vectors)
 
 
-# === Tiền xử lý ảnh ===
+# Tiền xử lý ảnh
 def image_preprocessing(file_bytes):
     img = Image.open(io.BytesIO(file_bytes)).convert("RGB").resize((224, 224))
     x = image.img_to_array(img)
@@ -30,14 +29,14 @@ def image_preprocessing(file_bytes):
     return x
 
 
-# === Trích xuất vector đặc trưng ===
+# Trích xuất vector đặc trưng
 def extract_vector(img_bytes):
     tensor = image_preprocessing(img_bytes)
     vector = model.predict(tensor)[0]
     return vector / np.linalg.norm(vector)
 
 
-# === Route tìm kiếm ===
+# Route tìm kiếm
 @app.route("/search", methods=["POST"])
 def search():
     if "image" not in request.files:
@@ -57,22 +56,26 @@ def search():
         distances = np.linalg.norm(vectors - query_vector, axis=1)
         ids = np.argsort(distances)[:10]
 
+        # d = distances, ids = np.argsort(d)[:10]
         results = [
-            {"path": os.path.basename(paths[i]), "distance": float(distances[i])}
+            {
+                "path": paths[i],
+                "distance": float(distances[i]),
+            }  # paths[i] như "fox/fox_0037.jpg"
             for i in ids
         ]
-
         return jsonify(results)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-# === Route phục vụ ảnh từ thư mục dataset ===
-@app.route("/dataset/<path:filename>")
-def serve_dataset_image(filename):
-    return send_from_directory("dataset", filename)
+# Route phục vụ ảnh từ thư mục dataset
+# @app.route("/dataset/<path:filename>")
+# def serve_dataset_image(filename):
+#     return send_from_directory("dataset", filename)
 
 
-# === Chạy server ===
+# Chạy server
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, threaded=True, use_reloader=False)
