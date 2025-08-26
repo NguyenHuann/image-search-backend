@@ -12,7 +12,9 @@ from tensorflow.keras.preprocessing import image
 app = Flask(__name__, static_folder="dataset", static_url_path="/dataset")
 CORS(app)
 # Load model
-model = EfficientNetB0(weights="imagenet", include_top=False, pooling="avg")
+model = EfficientNetB0(
+    weights="imagenet", include_top=False, pooling="avg", input_shape=(224, 224, 3)
+)
 
 # Load vector và path ảnh đã lưu
 vectors = pickle.load(open("vectors.pkl", "rb"))
@@ -61,19 +63,13 @@ def search():
             {
                 "path": paths[i],
                 "distance": float(distances[i]),
-            }  # paths[i] như "fox/fox_0037.jpg"
+            }
             for i in ids
         ]
         return jsonify(results)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# Route phục vụ ảnh từ thư mục dataset
-# @app.route("/dataset/<path:filename>")
-# def serve_dataset_image(filename):
-#     return send_from_directory("dataset", filename)
 
 
 # Chạy server
