@@ -9,9 +9,7 @@ from PIL import Image
 
 # CẤU HÌNH
 API_URL = "http://localhost:5000/search"
-QUERY_IMAGE = (
-    "testimage/cat.jpeg"  # chọn ảnh test, có thể thay bằng các ảnh khác trong testimage
-)
+QUERY_IMAGE = "testimage/bánh đa cua.jpg"  # chọn ảnh test, có thể thay bằng các ảnh khác trong testimage
 
 DATASET_ROOT = "./dataset"
 TOP_K = 10  # số ảnh kết quả muốn hiển thị (None = tất cả)
