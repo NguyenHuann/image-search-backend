@@ -58,7 +58,6 @@ def search():
         distances = np.linalg.norm(vectors - query_vector, axis=1)
         ids = np.argsort(distances)[:10]
 
-        # d = distances, ids = np.argsort(d)[:10]
         results = [
             {
                 "path": paths[i],

@@ -1,4 +1,3 @@
-# input.py
 import os
 import io
 import math
